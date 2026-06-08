@@ -1,0 +1,12 @@
+{
+  "name": "hive-landing",
+  "version": "1.0.0",
+  "description": "Hive Life Haven — Video Landing Page",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

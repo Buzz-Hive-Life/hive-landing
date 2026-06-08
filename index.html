@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hive Life Haven — Welcome Home 🐝</title>
+    <style>
+        /* ============ RESET & BASE ============ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+        }
+
+        /* ============ HERO ============ */
+        .hero {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ============ VIDEO CONTAINER ============ */
+        .video-container {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .video-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%) translateZ(0);
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: opacity;
+        }
+
+        .video-bg.active {
+            opacity: 1;
+        }
+
+        /* ============ OVERLAYS ============ */
+        .video-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: linear-gradient(180deg,
+                rgba(10, 10, 10, 0.50) 0%,
+                rgba(10, 10, 10, 0.25) 25%,
+                rgba(10, 10, 10, 0.10) 40%,
+                rgba(10, 10, 10, 0.15) 60%,
+                rgba(10, 10, 10, 0.40) 75%,
+                rgba(10, 10, 10, 0.70) 100%);
+        }
+
+        .warm-wash {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            opacity: 0.25;
+            mix-blend-mode: overlay;
+            background:
+                radial-gradient(ellipse 70% 40% at 30% 40%, rgba(255, 222, 89, 0.35) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 50% at 70% 60%, rgba(255, 51, 204, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 60% at 50% 80%, rgba(51, 204, 255, 0.10) 0%, transparent 50%);
+        }
+
+        .vignette {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            background: radial-gradient(ellipse 75% 60% at 50% 50%,
+                transparent 40%,
+                rgba(10, 10, 10, 0.35) 100%);
+            pointer-events: none;
+        }
+
+        /* ============ CONTENT ============ */
+        .content {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .brand {
+            margin-bottom: auto;
+            padding-top: 2.5rem;
+            opacity: 0.9;
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 500;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-name .hive {
+            background: linear-gradient(135deg, #FFDE59, #FF33CC, #33CCFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .center-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            padding: 1rem;
+        }
+
+        .tagline {
+            font-size: clamp(1.5rem, 4vw, 3.5rem);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 4px 40px rgba(0, 0, 0, 0.6);
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+            transition: opacity 1.5s ease;
+        }
+
+        .tagline strong {
+            font-weight: 600;
+            background: linear-gradient(135deg, #FFDE59, #FFB800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline.fade-out {
+            opacity: 0;
+        }
+
+        .enter-btn {
+            display: inline-block;
+            padding: 1rem 3rem;
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            border-radius: 100px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.6s ease;
+            position: absolute;
+            bottom: 15vh;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .enter-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 222, 89, 0.5);
+            box-shadow: 0 0 40px rgba(255, 222, 89, 0.15);
+            letter-spacing: 0.2em;
+        }
+
+        .enter-btn .arrow {
+            display: inline-block;
+            margin-left: 0.5rem;
+            transition: transform 0.4s ease;
+        }
+
+        .enter-btn:hover .arrow {
+            transform: translateX(6px);
+        }
+
+        /* ============ DECORATIVE PARTICLES ============ */
+        .glow-dots {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .glow-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(255, 222, 89, 0.3);
+            box-shadow: 0 0 12px rgba(255, 222, 89, 0.15);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .glow-dot:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; animation-duration: 22s; }
+        .glow-dot:nth-child(2) { top: 25%; left: 80%; animation-delay: -3s; animation-duration: 18s; }
+        .glow-dot:nth-child(3) { top: 60%; left: 5%; animation-delay: -7s; animation-duration: 25s; }
+        .glow-dot:nth-child(4) { top: 70%; left: 85%; animation-delay: -11s; animation-duration: 20s; }
+        .glow-dot:nth-child(5) { top: 40%; left: 50%; animation-delay: -5s; animation-duration: 23s; }
+        .glow-dot:nth-child(6) { top: 80%; left: 20%; animation-delay: -9s; animation-duration: 19s; }
+        .glow-dot:nth-child(7) { top: 10%; left: 60%; animation-delay: -2s; animation-duration: 21s; }
+        .glow-dot:nth-child(8) { top: 85%; left: 70%; animation-delay: -15s; animation-duration: 17s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            25% { transform: translateY(-30px) scale(1.2); opacity: 0.6; }
+            50% { transform: translateY(10px) scale(0.8); opacity: 0.2; }
+            75% { transform: translateY(-15px) scale(1.1); opacity: 0.5; }
+        }
+
+        /* ============ LOADING ============ */
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.4);
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 768px) {
+            .brand { padding-top: 1.5rem; }
+            .brand-name { font-size: 0.9rem; letter-spacing: 0.25em; }
+            .enter-btn {
+                padding: 0.8rem 2rem;
+                font-size: 0.8rem;
+                bottom: 12vh;
+            }
+            .glow-dot { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">Welcome to the Hive 🐝</div>
+    </div>
+
+    <!-- Hero -->
+    <main class="hero" role="main">
+
+        <!-- Video Background -->
+        <div class="video-container" aria-hidden="true">
+            <video class="video-bg video-1 active" muted playsinline preload="auto" poster="">
+                <source src="/video/queen_video_1.mp4" type="video/mp4">
+            </video>
+            <video class="video-bg video-2" muted playsinline preload="none" poster="">
+                <source src="/video/queen_video_2.mp4" type="video/mp4">
+            </video>
+        </div>
+
+        <!-- Overlays -->
+        <div class="video-overlay"></div>
+        <div class="warm-wash"></div>
+        <div class="vignette"></div>
+
+        <!-- Glow Dots -->
+        <div class="glow-dots">
+            <div class="glow-dot"></div>
+            <div class="glow-dot"></div>
+            <div class="glow-dot"></div>
+            <div class="glow-dot"></div>
+            <div class="glow-dot"></div>
+            <div class="glow-dot"></div>
+            <div class="glow-dot"></div>
+            <div class="glow-dot"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- Brand -->
+            <div class="brand">
+                <div class="brand-name">
+                    <span class="hive">Hive Life Haven</span> &middot; Welcome Home
+                </div>
+            </div>
+
+            <!-- Tagline -->
+            <div class="center-message">
+                <div class="tagline" id="tagline">
+                    A world of <strong>abundance</strong> awaits you 🍯
+                </div>
+            </div>
+
+            <!-- Enter Button -->
+            <a href="https://hivelife.ca" class="enter-btn" id="enterBtn">
+                Enter the Hive
+                <span class="arrow">→</span>
+            </a>
+        </div>
+    </main>
+
+    <script>
+        // ============ VIDEO CROSSFADE SYSTEM ============
+        const videos = document.querySelectorAll('.video-bg');
+        const tagline = document.getElementById('tagline');
+        const loadingScreen = document.getElementById('loadingScreen');
+        let currentVideo = 0;
+        let isTransitioning = false;
+        const FADE_DURATION = 3;
+        const PRELOAD_TIME = 8;
+
+        // Scene content per video
+        const scenes = [
+            { text: 'A world of <strong>abundance</strong> awaits you 🍯' },
+            { text: 'Come home to the <strong>Hive</strong> 🐝' }
+        ];
+
+        function preloadVideo(video) {
+            if (video.preload === 'none') {
+                video.preload = 'auto';
+                video.load();
+            }
+        }
+
+        function unloadVideo(video) {
+            video.pause();
+            video.currentTime = 0;
+            video.preload = 'none';
+        }
+
+        function updateText(index) {
+            tagline.innerHTML = scenes[index].text;
+        }
+
+        function crossfadeToNext() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            const prevIndex = currentVideo;
+            const nextIndex = (currentVideo + 1) % videos.length;
+            const currentVid = videos[currentVideo];
+            const nextVid = videos[nextIndex];
+
+            // Fade tagline
+            tagline.classList.add('fade-out');
+            setTimeout(() => {
+                updateText(nextIndex);
+                tagline.classList.remove('fade-out');
+                void tagline.offsetWidth;
+            }, 800);
+
+            // Start next video
+            nextVid.currentTime = 0;
+            nextVid.play().catch(() => {});
+
+            // CSS crossfade
+            currentVid.classList.remove('active');
+            nextVid.classList.add('active');
+            currentVideo = nextIndex;
+
+            // Cleanup
+            setTimeout(() => {
+                isTransitioning = false;
+                unloadVideo(videos[prevIndex]);
+            }, FADE_DURATION * 1000);
+        }
+
+        function setupVideoTransition(video, index) {
+            let hasTriggeredFade = false;
+            let hasPreloadedNext = false;
+
+            video.addEventListener('timeupdate', () => {
+                const timeRemaining = video.duration - video.currentTime;
+
+                if (timeRemaining <= PRELOAD_TIME && !hasPreloadedNext && index === currentVideo) {
+                    preloadVideo(videos[(currentVideo + 1) % videos.length]);
+                    hasPreloadedNext = true;
+                }
+
+                if (timeRemaining <= FADE_DURATION && !hasTriggeredFade && index === currentVideo) {
+                    crossfadeToNext();
+                    hasTriggeredFade = true;
+                }
+
+                if (video.currentTime < 1) {
+                    hasTriggeredFade = false;
+                    hasPreloadedNext = false;
+                }
+            });
+
+            video.addEventListener('ended', () => {
+                if (index === currentVideo) crossfadeToNext();
+            });
+        }
+
+        // ============ INIT ============
+        let videosReady = 0;
+
+        videos.forEach((video, index) => {
+            video.addEventListener('loadeddata', () => {
+                setupVideoTransition(video, index);
+                videosReady++;
+                if (videosReady === videos.length) {
+                    // All videos loaded - hide loading screen
+                    setTimeout(() => {
+                        loadingScreen.classList.add('hidden');
+                    }, 500);
+                }
+            });
+
+            // Error recovery - hide loading after timeout
+            video.addEventListener('error', () => {
+                videosReady++;
+                if (videosReady === videos.length) {
+                    setTimeout(() => loadingScreen.classList.add('hidden'), 1000);
+                }
+            });
+        });
+
+        // Safety: hide loading after 10 seconds no matter what
+        setTimeout(() => {
+            loadingScreen.classList.add('hidden');
+        }, 10000);
+
+        // Start video 1
+        videos[0].play().catch(() => {
+            // Autoplay blocked - hide loading and show message
+            loadingScreen.classList.add('hidden');
+        });
+
+        // ============ KEYBOARD ============
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                window.location.href = 'https://hivelife.ca';
+            }
+        });
+    </script>
+</body>
+</html>
