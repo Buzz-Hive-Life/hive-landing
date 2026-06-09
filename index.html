@@ -55,7 +55,6 @@
 
         .video-bg.active {
             opacity: 1;
-            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* ============ OVERLAYS ============ */
@@ -294,7 +293,7 @@
             <video class="video-bg video-1 active" muted playsinline preload="auto" poster="">
                 <source src="video/queen_video_1.mp4" type="video/mp4">
             </video>
-            <video class="video-bg video-2" muted playsinline preload="none" poster="">
+            <video class="video-bg video-2" muted playsinline preload="auto" poster="">
                 <source src="video/queen_video_2.mp4" type="video/mp4">
             </video>
         </div>
@@ -342,13 +341,13 @@
     </main>
 
     <script>
-        // ============ VIDEO CROSSFADE SYSTEM ============
+        // ============ VIDEO SWITCH SYSTEM ============
         const videos = document.querySelectorAll('.video-bg');
         const tagline = document.getElementById('tagline');
         const loadingScreen = document.getElementById('loadingScreen');
         let currentVideo = 0;
         let isTransitioning = false;
-        const FADE_DURATION = 3;
+        const FADE_DURATION = 1;
         const PRELOAD_TIME = 8;
 
         // Scene content per video
@@ -395,7 +394,7 @@
             nextVid.currentTime = 0;
             nextVid.play().catch(() => {});
 
-            // CSS crossfade
+            // Instant switch — swap active class
             currentVid.classList.remove('active');
             nextVid.classList.add('active');
             currentVideo = nextIndex;
@@ -404,7 +403,7 @@
             setTimeout(() => {
                 isTransitioning = false;
                 unloadVideo(videos[prevIndex]);
-            }, FADE_DURATION * 1000);
+            }, 500);
         }
 
         function setupVideoTransition(video, index) {
@@ -436,33 +435,31 @@
         }
 
         // ============ INIT ============
-        let videosReady = 0;
 
-        videos.forEach((video, index) => {
-            video.addEventListener('loadeddata', () => {
-                setupVideoTransition(video, index);
-                videosReady++;
-                if (videosReady === videos.length) {
-                    // All videos loaded - hide loading screen instantly
-                    setTimeout(() => {
-                        loadingScreen.classList.add('hidden');
-                    }, 0);
-                }
-            });
-
-            // Error recovery - hide loading after timeout
-            video.addEventListener('error', () => {
-                videosReady++;
-                if (videosReady === videos.length) {
-                    setTimeout(() => loadingScreen.classList.add('hidden'), 1000);
-                }
-            });
+        // Hide loading screen the moment video 1 has data — no waiting for video 2
+        videos[0].addEventListener('loadeddata', () => {
+            video1Ready = true;
+            setupVideoTransition(videos[0], 0);
+            loadingScreen.classList.add('hidden');
         });
 
-        // Safety: hide loading after 5 seconds no matter what
+        // Set up video 2 lazily
+        videos[1].addEventListener('loadeddata', () => {
+            setupVideoTransition(videos[1], 1);
+        });
+
+        // Error recovery - hide loading after timeout
+        videos[0].addEventListener('error', () => {
+            loadingScreen.classList.add('hidden');
+        });
+        videos[1].addEventListener('error', () => {
+            setupVideoTransition(videos[1], 1);
+        });
+
+        // Safety: hide loading after 3 seconds no matter what
         setTimeout(() => {
             loadingScreen.classList.add('hidden');
-        }, 5000);
+        }, 3000);
 
         // Start video 1
         videos[0].play().catch(() => {
